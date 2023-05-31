@@ -11,13 +11,14 @@ type alias Picture = Box -> Rendering
 blank : Picture 
 blank _ = []
 
-turn : Picture -> Picture
-turn p = turnBox >> p 
-
 times : Int -> (a -> a) -> (a -> a)
 times n fn = 
-    if n < 1 then identity
-    else fn >> times (n - 1) fn 
+    if n < 1 then identity 
+    else fn >> (times (n - 1) fn)
+
+turn : Picture -> Picture
+turn p = 
+  turnBox >> p 
 
 flip : Picture -> Picture
 flip p = flipBox >> p 
@@ -29,10 +30,10 @@ aboveRatio : Int -> Int -> Picture -> Picture -> Picture
 aboveRatio m n p1 p2 = 
     \box -> 
         let 
-            f = toFloat m / toFloat (m + n) 
-            (top, bot) = splitVertically f box
+            f = toFloat m / toFloat (m + n)
+            (b1, b2) = splitVertically f box 
         in 
-            (p1 top) ++ (p2 bot) 
+            (p1 b1) ++ (p2 b2)
 
 above : Picture -> Picture -> Picture
 above = aboveRatio 1 1
@@ -49,22 +50,54 @@ besideRatio m n p1 p2 =
 beside : Picture -> Picture -> Picture
 beside = besideRatio 1 1
 
+-- column : create a column of pictures
+column : List Picture -> Picture
+column ps =
+  case ps of 
+    [] -> blank
+    [p] -> p
+    h::t -> aboveRatio 1 (List.length t) h (column t)
+
+-- row : create a row of pictures
+row : List Picture -> Picture
+row ps = 
+    case ps of 
+        [] -> blank 
+        [p] -> p 
+        h :: t -> 
+            besideRatio 1 (List.length t) h (row t)
+
 -- quartet : 4 pictures arranged in 2 x 2 grid
 quartet : Picture -> Picture -> Picture -> Picture -> Picture
 quartet nw ne sw se = 
-    above (beside nw ne)
+    above (beside nw ne) 
           (beside sw se)
+
+iv p = quartet p p p p 
 
 -- nonet : 9 pictures arranged in 3 x 3 grid
 nonet : Picture -> Picture -> Picture -> Picture -> Picture -> Picture -> Picture -> Picture -> Picture -> Picture
 nonet nw nm ne mw mm me sw sm se = 
-    let 
-        row w m e = besideRatio 1 2 w (beside m e)
-        col n m s = aboveRatio 1 2 n (above m s)
-    in 
-        col (row nw nm ne)
-            (row mw mm me)
-            (row sw sm se)
+    column [ row [nw, nm, ne], row [mw, mm, me], row [sw, sm, se] ]
+
+-- zoom : 9 pictures arranged in 3 x 3 grid with zoom effect
+zoom : Int -> Picture -> Picture -> Picture -> Picture -> Picture -> Picture -> Picture -> Picture -> Picture -> Picture
+zoom n nw nm ne mw mm me sw sm se =
+  if n < 1 then mm
+  else
+    let
+      m = nonet nw nm ne mw mm me sw sm se
+    in
+      zoom (n - 1) nw nm ne mw m me sw sm se
+
+zom : Int -> Picture -> Picture -> Picture -> Picture -> Picture -> Picture -> Picture -> Picture -> Picture -> Picture
+zom n nw nm ne mw mm me sw sm se =
+  if n < 1 then mm
+  else
+    let
+      m = nonet nw nm ne mw mm me sw sm se
+    in
+      zom (n - 1) m nm m mw m me m sm m
 
 over : Picture -> Picture -> Picture
 over p1 p2 = 
@@ -72,54 +105,59 @@ over p1 p2 =
 
 ttile : Picture -> Picture
 ttile fish = 
-    let 
-        fishN = fish |> toss |> flip
-        fishE = fishN |> turn |> turn |> turn
-    in 
-        fishE |> over fishN |> over fish   
+    let
+        n = fish |> toss |> flip
+        e = times 3 turn n
+    in
+        over fish (over n e)
 
 utile : Picture -> Picture
-utile fish = 
-    let 
-        fishN = fish |> toss |> flip 
-        fishW = turn fishN 
-        fishS = turn fishW 
-        fishE = turn fishS 
-    in 
-        fishE |> over fishS |> over fishW |> over fishN 
+utile fish =
+    let
+        n = fish |> toss |> flip 
+        w = n |> turn 
+        s = w |> turn 
+        e = s |> turn 
+    in
+        n |> over w |> over s |> over e
+    
+-- cycle : a quartet with rotations
+cycle : Picture -> Picture
+cycle p = quartet p (p |> turn |> turn |> turn) (p |> turn) (p |> turn |> turn)    
 
 side : Int -> Picture -> Picture
 side n fish = 
-    if n < 1 then blank
+    if n < 1 then blank 
     else 
-        let 
+        let
             s = side (n - 1) fish
-            t = ttile fish
-        in 
+            t = ttile fish 
+        in
             quartet s s (turn t) t 
 
 corner : Int -> Picture -> Picture
-corner n fish =
-    if n < 1 then blank
+corner n fish = 
+    if n < 1 then blank 
     else 
-        let 
+        let
             c = corner (n - 1) fish 
-            s = side (n - 1) fish
-        in 
-            quartet c s (turn s) (utile fish)
-
-squareLimit : Int -> Picture -> Picture
-squareLimit n fish =
-    let 
-        nw = corner n fish 
-        sw = turn nw 
-        se = turn sw 
-        ne = turn se
-        nm = side n fish 
-        mw = turn nm
-        sm = turn mw
-        me = turn sm
-        mm = utile fish
-    in 
-        nonet nw nm ne mw mm me sw sm se
+            s = side (n - 1) fish 
+            u = utile fish
+        in
+            quartet c s (turn s) u
         
+squareLimit : Int -> Picture -> Picture
+squareLimit n fish = 
+    let
+        nw = corner n fish 
+        sw = nw |> turn 
+        se = sw |> turn 
+        ne = se |> turn 
+        nm = side n fish 
+        mw = nm |> turn 
+        sm = mw |> turn 
+        me = sm |> turn 
+        mm = utile fish 
+    in
+        nonet nw nm ne mw mm me sw sm se 
+    
