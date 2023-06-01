@@ -8,4 +8,3 @@ gatherBoxes n transform box =
   if n < 1 then [ box ]
   else
     box :: gatherBoxes (n - 1) transform (transform box)
-
