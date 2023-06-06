@@ -17,8 +17,8 @@ main : Html msg
 main = 
   let 
     decor = 
-      { coordinates = True
-      , boxes = DrawVectors }
+      { coordinates = False
+      , boxes = DrawNothing }
     box = { a = { dx = 100.0, dy = 100.0 }
           , b = { dx = 300.0, dy = 0.0 }
           , c = { dx = 0.0, dy = 300.0 } }

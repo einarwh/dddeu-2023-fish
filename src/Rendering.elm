@@ -139,12 +139,12 @@ toSolidBoxPolylineElement pts =
       , fill "None"
       , points s ] []
 
-toBoxPolylineElement : BoxRendering -> List Point -> Maybe (Svg msg) 
+toBoxPolylineElement : BoxRendering -> List Point -> List (Svg msg) 
 toBoxPolylineElement rendering points = 
   case rendering of 
-    DrawVectors -> Just (toDottedBoxPolylineElement points)
-    DrawOutline -> Just (toSolidBoxPolylineElement points)
-    DrawNothing -> Nothing
+    DrawVectors -> [ toDottedBoxPolylineElement points ]
+    DrawOutline -> [ toSolidBoxPolylineElement points ]
+    DrawNothing -> []
 
 toBoxLine : (Point -> Point) -> Point -> Point -> (String, String) -> Svg msg
 toBoxLine m p1 p2 (name, color) = 
@@ -296,7 +296,7 @@ toSvgWithBoxes bounds boxes decoration rendering =
     (w, h) = bounds
     viewBoxValue = ["0", "0", String.fromInt w, String.fromInt h] |> String.join " "
     mirror = mirrorPoint <| toFloat h
-    boxShapes = boxes |> List.map (toBoxShape mirror) |> List.filterMap (toBoxPolylineElement decoration.boxes)
+    boxShapes = boxes |> List.map (toBoxShape mirror) |> List.concatMap (toBoxPolylineElement decoration.boxes)
     boxArrows = boxes |> List.concatMap (toBoxArrows mirror)
     boxLines = 
       case decoration.boxes of 
