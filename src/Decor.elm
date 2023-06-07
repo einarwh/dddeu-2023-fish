@@ -20,7 +20,10 @@ decorate svg =
           , style "font-family" "Lucida Console"
           , style "font-size" "20px" ] 
           [ text "@einarwh" ] 
-    body = div [ style "padding" "50px" ] [ svg ]
+    body = 
+      div [ style "padding" "50px"
+          , style "text-align" "center" ] 
+          [ svg ]
   in 
     div [] [ body, footer ]
 
