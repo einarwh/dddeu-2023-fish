@@ -19,7 +19,7 @@ decorate svg =
           , style "width" "100%"
           , style "font-family" "Lucida Console"
           , style "font-size" "20px" ] 
-          [ text "@einarwh" ] 
+          [ text "Einar W. Høst" ] 
     body = 
       div [ style "padding" "50px"
           , style "text-align" "center" ] 
