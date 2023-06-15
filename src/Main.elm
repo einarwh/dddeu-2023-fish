@@ -7,10 +7,12 @@ import Recursion exposing (sideBoxes, cornerBoxes)
 import Letter exposing (..)
 import Figure exposing (..)
 import Fishy exposing (fishShapes)
+import Lizzy exposing (lizardShapes)
 import Fitting exposing (createPicture)
 import Html exposing (Html)
 import Rendering exposing (BoxRendering(..))
 import Decor exposing (render)
+import Lizzy exposing (lizardShapes)
 
 main : Html msg
 main = 
@@ -18,12 +20,12 @@ main =
     decor = 
       { coordinates = False
       , boxes = DrawOutline }
-    box = { a = { dx = 100.0, dy = 100.0 }
+    box = { a = { dx = 50.0, dy = 100.0 }
           , b = { dx = 300.0, dy = 0.0 }
           , c = { dx = 0.0, dy = 300.0 } }
-    fish = createPicture fishShapes
+    liz = createPicture lizardShapes
     n = 4
-    boxes = cornerBoxes n box 
+    p = over liz (times 2 turn liz)
   in     
-    box |> squareLimit n fish
-        |> render [] decor
+    box |> liz
+        |> render [ box ] decor

@@ -19,7 +19,7 @@ type alias Decoration =
 --useArrows = True
 
 dottedLineColor = "grey"
-solidLineColor = "red"
+solidLineColor = "grey"
 
 toString : Float -> String 
 toString = String.fromFloat
@@ -106,6 +106,45 @@ toSvgElement style shape =
       toArcElement style startPoint controlPoint endPoint
     x -> text "nothing"
 
+toControlPointElements : Shape -> List (Svg msg) 
+toControlPointElements shape = 
+  case shape of 
+    Curve { point1, point2, point3, point4 } ->
+      pointToLineElements point2 ++ pointToLineElements point3 
+    _ -> []
+
+pointToLineElements : Point -> List (Svg msg) 
+pointToLineElements {x, y} = 
+  let
+      size = 4
+      clr = "red"
+      sw = "1.5"
+
+      xLeft = x - size 
+      xRight = x + size
+      yBottom = y - size
+      yTop = y + size
+      line1 = 
+        Svg.line 
+          [ stroke clr
+          , strokeWidth sw
+          , fill "None"
+          , x1 <| toString xLeft
+          , y1 <| toString yBottom
+          , x2 <| toString xRight 
+          , y2 <| toString yTop ] []
+      line2 = 
+        Svg.line 
+          [ stroke clr
+          , strokeWidth sw
+          , fill "None"
+          , x1 <| toString xLeft
+          , y1 <| toString yTop
+          , x2 <| toString xRight 
+          , y2 <| toString yBottom ] []
+  in
+    [ line1, line2 ]
+
 toDottedBoxPolylineElement : List Point -> Svg msg
 toDottedBoxPolylineElement pts = 
   let 
@@ -136,6 +175,7 @@ toSolidBoxPolylineElement pts =
     Svg.polyline 
       [ stroke solidLineColor
       , strokeWidth <| toString sw
+      , strokeDasharray "1,1"
       , fill "None"
       , points s ] []
 
@@ -304,6 +344,8 @@ toSvgWithBoxes bounds boxes decoration rendering =
         _ -> boxShapes
     toElement (shape, style) = toSvgElement style (mirrorShape mirror shape)
     things = rendering |> List.map toElement
+    toCrosses (shape, style) = toControlPointElements (mirrorShape mirror shape)
+    crosses = rendering |> List.concatMap toCrosses
     axes = 
       if decoration.coordinates then (createAxes w h) else []
     markers =
@@ -314,7 +356,7 @@ toSvgWithBoxes bounds boxes decoration rendering =
     svgElements = 
       case boxes of 
       [] -> things ++ axes
-      _ -> ([defs] ++ things ++ boxLines ++ axes)
+      _ -> ([defs] ++ things ++ crosses ++ boxLines ++ axes)
   in
     svg
       [ version "1.1"

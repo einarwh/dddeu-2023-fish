@@ -120,6 +120,18 @@ utile fish =
         e = s |> turn 
     in
         n |> over w |> over s |> over e
+
+
+utile4 : Picture -> Picture -> Picture -> Picture -> Picture
+utile4 p1 p2 p3 p4 =
+    let
+        tf = toss >> flip
+        n = p1 |> tf
+        w = p2 |> tf |> turn 
+        s = p3 |> tf |> times 2 turn 
+        e = p4 |> tf |> times 3 turn 
+    in
+        n |> over w |> over s |> over e
     
 -- cycle : a quartet with rotations
 cycle : Picture -> Picture
@@ -161,3 +173,16 @@ squareLimit n fish =
     in
         nonet nw nm ne mw mm me sw sm se 
     
+ribbon : Int -> Picture -> Picture 
+ribbon n fish = 
+    if n < 1 then blank 
+    else 
+        let
+            t = ttile fish |> turn |> turn 
+            r = ribbon (n - 1) fish
+            nw = t 
+            ne = t |> turn
+            sw = r 
+            se = r 
+        in
+            quartet nw ne sw se 
