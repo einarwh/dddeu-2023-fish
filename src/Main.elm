@@ -19,13 +19,14 @@ main =
   let 
     decor = 
       { coordinates = False
-      , boxes = DrawOutline }
+      , boxes = DrawNothing }
     box = { a = { dx = 50.0, dy = 100.0 }
           , b = { dx = 300.0, dy = 0.0 }
           , c = { dx = 0.0, dy = 300.0 } }
     liz = createPicture lizardShapes
+    fish = createPicture fishShapes
     n = 4
     p = over liz (times 2 turn liz)
   in     
-    box |> liz
+    box |> smallerandsmaller 6 fish
         |> render [ box ] decor

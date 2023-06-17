@@ -356,7 +356,8 @@ toSvgWithBoxes bounds boxes decoration rendering =
     svgElements = 
       case boxes of 
       [] -> things ++ axes
-      _ -> ([defs] ++ things ++ crosses ++ boxLines ++ axes)
+      --_ -> ([defs] ++ things ++ crosses ++ boxLines ++ axes)
+      _ -> ([defs] ++ things ++ boxLines ++ axes)
   in
     svg
       [ version "1.1"

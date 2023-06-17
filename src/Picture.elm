@@ -186,3 +186,38 @@ ribbon n fish =
             se = r 
         in
             quartet nw ne sw se 
+
+smaller n fish = 
+    if n < 1 then blank 
+    else 
+        let
+            t = ttile fish 
+            p = fish |> turn |> turn |> over fish |> turn
+            r = smaller (n - 1) fish
+
+        in
+            quartet t r p t
+
+andsmaller n fish = 
+    let
+        sw = smaller n fish 
+        se = sw |> turn 
+        ne = se |> turn 
+        nw = ne |> turn 
+    in
+        quartet nw ne sw se  
+
+smallerandsmaller n fish = 
+    let
+        t = ttile fish 
+        sw = t 
+        se = sw |> turn 
+        ne = se |> turn 
+        nw = ne |> turn 
+        mm = andsmaller n fish 
+        nm = quartet t (t |> turn) (t |> times 3 turn) (t |> times 2 turn)
+        mw = turn nm 
+        sm = turn mw 
+        me = turn sm 
+    in
+        nonet nw nm ne mw mm me sw sm se 
